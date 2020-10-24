@@ -32,10 +32,12 @@ public class AuctionHouseService {
                 AuctionHouse auctionHouse = new AuctionHouse();
                 auctionHouse.name = name;
                 auctionHouseRepository.persist(auctionHouse);
+                // No need to return the entity body, just the status code
                 return Response.status(204).build();
             });
     }
 
+    @Transactional
     public Response deleteById(Long id) {
         return auctionHouseRepository.findByIdOptional(id)
             .map(
@@ -46,6 +48,7 @@ public class AuctionHouseService {
             .orElse(Response.status(Response.Status.NOT_FOUND).entity("AuctionHouse not found").build());
     }
 
+    @Transactional
     public Response deleteByName(String name) {
         return auctionHouseRepository.findByName(name)
             .map(

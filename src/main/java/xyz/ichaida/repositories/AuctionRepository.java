@@ -30,10 +30,10 @@ public class AuctionRepository implements PanacheRepository<Auction> {
      * Retrieves the Auction by status
      *
      * @param status Status
-     * @return Optional<Auction>
+     * @return List<Auction>
      */
-    public Optional<Auction> findByStatus(String status) {
-        return find("status", status).firstResultOptional();
+    public List<Auction> findByStatus(String status) {
+        return find("status", status).list();
     }
 
     /**

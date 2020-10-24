@@ -2,7 +2,7 @@ package xyz.ichaida.resources;
 
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import xyz.ichaida.entities.Auction;
-import xyz.ichaida.repositories.AuctionRepository;
+import xyz.ichaida.services.AuctionService;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -24,8 +24,12 @@ import java.util.List;
 public class AuctionResource {
     public static final String RESOURCE_PATH = "/api/auctions";
 
+    final AuctionService auctionService;
+
     @Inject
-    AuctionRepository auctionRepository;
+    public AuctionResource(AuctionService auctionService) {
+        this.auctionService = auctionService;
+    }
 
     /**
      * Lists all Auction.
@@ -33,15 +37,22 @@ public class AuctionResource {
      * @return List of all Auctions.
      */
     @GET
+    @Path("/find/all")
     public List<Auction> getAll() {
-        return auctionRepository.listAll();
+        return this.auctionService.getAll();
+    }
+
+    @GET
+    @Path("/find/all/{auctionHouseName}")
+    public List<Auction> getAllAuctionsByHouseName(@PathParam("auctionHouseName") String HouseName) {
+        return this.auctionService.getAllByHouseName(HouseName);
     }
 
 
     @GET
     @Path("/find/status/{auctionStatus}")
     public List<Auction> findByStatus(@PathParam("auctionStatus") String status) {
-        return auctionRepository.listAll();
+        return auctionService.findByStatus(status);
     }
 
     @GET

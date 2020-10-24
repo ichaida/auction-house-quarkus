@@ -1,6 +1,5 @@
-package xyz.ichaida.repository;
+package xyz.ichaida.repositories;
 
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import xyz.ichaida.entities.AuctionHouse;
 
@@ -13,8 +12,12 @@ import java.util.Optional;
 @ApplicationScoped
 public class AuctionHouseRepository implements PanacheRepository<AuctionHouse> {
 
-    // Retrieves the AuctionHouse by name
-    public Optional<AuctionHouse> findByName(String name)  {
+    /**
+     * Retrieves the AuctionHouse by name
+     */
+    public Optional<AuctionHouse> findByName(String name) {
         return find("name", name).firstResultOptional();
     }
+
+
 }

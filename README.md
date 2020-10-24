@@ -31,15 +31,28 @@ You can inspect the static content of the generated schema at the default /opena
 curl http://localhost:8080/openapi
 ```
 
+and Swagger UI
+
+```
+http://0.0.0.0:8080/swagger-ui/
+```
+
 ## Database 
 
-Login as a Postgres user then:
+### PostgreSQL (Local)
+
+Login as a Postgres user:
 
 ```postgresql
 CREATE DATABASE auction;
 CREATE USER auction WITH PASSWORD 'password';
 GRANT ALL PRIVILEGES ON DATABASE "auction" to auction;
 ```
+
+### PostgreSQL (Docker)
+
+Use the shell script under `postgres-10.sh` the `src/main/docker` to spin up your PostgreSQL instance ready for use.
+ 
 
 ## Packaging and running the application
 

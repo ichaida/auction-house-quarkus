@@ -37,7 +37,7 @@ public class AuctionResource {
      * @return List of all Auctions.
      */
     @GET
-    @Path("/find/all")
+    @Path("/all")
     public List<Auction> getAll() {
         return this.auctionService.getAll();
     }
@@ -56,10 +56,15 @@ public class AuctionResource {
     }
 
     @GET
-    @Path("/find/house/{auctionHouseId}")
+    @Path("/find/house/id/{auctionHouseId}")
     public List<Auction> getAllByAuctionHouseId(@PathParam("auctionHouseId") Long id) {
-        //List<Auction> auctionListByAuctionHouseId = auctionRepository.findByAuctionHouseId()
-        return Collections.emptyList();
+        return this.auctionService.getAllByHouseId(id);
+    }
+
+    @GET
+    @Path("/find/house/name/{auctionHouseName}")
+    public List<Auction> getAllByAuctionHouseName(@PathParam("auctionHouseName") String name) {
+        return this.auctionService.getAllByHouseName(name);
     }
 
     /**
@@ -69,21 +74,26 @@ public class AuctionResource {
      * @return Response
      */
     @DELETE
-    @Path("/delete/{auctionId}")
+    @Path("/delete/id/{auctionId}")
     public Response deleteAuctionById(@PathParam("auctionId") Long id) {
-        return null;
+        return this.auctionService.deleteById(id);
+    }
+
+    @DELETE
+    @Path("/delete/name/{auctionName}")
+    public Response deleteAuctionByName(@PathParam("auctionName") String name) {
+        return this.auctionService.deleteByName(name);
     }
 
     /**
      * Adds an Auction to an existing Auction House.
      *
      * @param auction Auction
-     * @return
+     * @return 200
      */
     @POST
-    @Transactional
+    @Path("/add")
     public Response addAuction(Auction auction) {
-        auctionRepository.persist(auction);
-        return Response.ok().build();
+        return this.auctionService.create(auction);
     }
 }

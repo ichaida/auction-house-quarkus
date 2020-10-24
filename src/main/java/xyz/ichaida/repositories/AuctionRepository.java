@@ -3,10 +3,13 @@ package xyz.ichaida.repositories;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import xyz.ichaida.entities.Auction;
 import xyz.ichaida.entities.AuctionHouse;
+import xyz.ichaida.entities.AuctionStatus;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.GET;
 import javax.ws.rs.core.Response;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,17 +36,21 @@ public class AuctionRepository implements PanacheRepository<Auction> {
      * @return List<Auction>
      */
     public List<Auction> findByStatus(String status) {
-        return find("status", status).list();
+        return Arrays.stream(AuctionStatus.values())
+            .filter(auctionStatus -> status.equalsIgnoreCase(auctionStatus.name()))
+            .findFirst()
+            .map(auctionStatus -> find("status", auctionStatus).list())
+            .orElse(Collections.emptyList());
     }
 
     /**
      * Finds an Auction by House Id
      *
-     * @param auctionHouse AuctionHouse.
+     * @param id AuctionHouse Id.
      * @return Optional<Auction>
      */
-    public Optional<Auction> findByAuctionHouseId(Long auctionHouse) {
-        return find("auctionHouse", auctionHouse).firstResultOptional();
+    public List<Auction> findByAuctionHouseId(Long id) {
+        return find("auctionHouse_id", id).list();
     }
 
 }

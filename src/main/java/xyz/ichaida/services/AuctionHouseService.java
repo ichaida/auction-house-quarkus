@@ -15,7 +15,7 @@ import java.util.List;
 @ApplicationScoped
 public class AuctionHouseService {
     @Inject
-    AuctionHouseRepository auctionHouseRepository;
+    private AuctionHouseRepository auctionHouseRepository;
 
     public List<AuctionHouse> getAll() {
         return auctionHouseRepository.listAll();
@@ -27,7 +27,7 @@ public class AuctionHouseService {
             .map(
                 existingAuctionHouse ->
                     Response.status(Response.Status.CONFLICT)
-                        .entity("AuctionHouse exists already in db.").build())
+                        .entity("Auction House exists already in database.").build())
             .orElseGet(() -> {
                 AuctionHouse auctionHouse = new AuctionHouse();
                 auctionHouse.name = name;
@@ -39,23 +39,23 @@ public class AuctionHouseService {
 
     @Transactional
     public Response deleteById(Long id) {
-        return auctionHouseRepository.findByIdOptional(id)
+        return this.auctionHouseRepository.findByIdOptional(id)
             .map(
                 auctionHouse -> {
                     auctionHouseRepository.delete(auctionHouse);
                     return Response.status(204).build();
                 })
-            .orElse(Response.status(Response.Status.NOT_FOUND).entity("AuctionHouse not found").build());
+            .orElse(Response.status(Response.Status.NOT_FOUND).entity("Auction House not found").build());
     }
 
     @Transactional
     public Response deleteByName(String name) {
-        return auctionHouseRepository.findByName(name)
+        return this.auctionHouseRepository.findByName(name)
             .map(
                 auctionHouse -> {
                     auctionHouseRepository.delete(auctionHouse);
                     return Response.status(204).build();
                 })
-            .orElse(Response.status(Response.Status.NOT_FOUND).entity("AuctionHouse not found").build());
+            .orElse(Response.status(Response.Status.NOT_FOUND).entity("Auction House not found").build());
     }
 }

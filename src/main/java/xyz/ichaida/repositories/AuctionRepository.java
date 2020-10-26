@@ -50,7 +50,10 @@ public class AuctionRepository implements PanacheRepository<Auction> {
      * @return Optional<Auction>
      */
     public List<Auction> findByAuctionHouseId(Long id) {
-        return find("auctionHouse_id", id).list();
+        return find("house_id", id).list();
     }
 
+    public int updateAuctionCurrentPriceById(Double bidAmount, Long auctionId) {
+        return update("currentPrice = ?1 where id = ?2", bidAmount, auctionId);
+    }
 }

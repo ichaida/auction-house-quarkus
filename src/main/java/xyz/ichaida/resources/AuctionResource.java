@@ -5,11 +5,9 @@ import xyz.ichaida.entities.Auction;
 import xyz.ichaida.services.AuctionService;
 
 import javax.inject.Inject;
-import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -41,13 +39,6 @@ public class AuctionResource {
     public List<Auction> getAll() {
         return this.auctionService.getAll();
     }
-
-    @GET
-    @Path("/find/all/{auctionHouseName}")
-    public List<Auction> getAllAuctionsByHouseName(@PathParam("auctionHouseName") String HouseName) {
-        return this.auctionService.getAllByHouseName(HouseName);
-    }
-
 
     @GET
     @Path("/find/status/{auctionStatus}")

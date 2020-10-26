@@ -1,5 +1,6 @@
 package xyz.ichaida.services;
 
+import lombok.extern.slf4j.Slf4j;
 import xyz.ichaida.entities.AuctionHouse;
 import xyz.ichaida.repositories.AuctionHouseRepository;
 
@@ -13,6 +14,7 @@ import java.util.List;
  * @author Ismail Chaida.
  */
 @ApplicationScoped
+@Slf4j
 public class AuctionHouseService {
     @Inject
     private AuctionHouseRepository auctionHouseRepository;
@@ -23,6 +25,8 @@ public class AuctionHouseService {
 
     @Transactional
     public Response create(String name) {
+        log.debug("Creating an Auction House with the name {}", name);
+        // Avoid Throwing exceptions, returning meaningful messages to the rest client
         return auctionHouseRepository.findByName(name)
             .map(
                 existingAuctionHouse ->
@@ -32,7 +36,7 @@ public class AuctionHouseService {
                 AuctionHouse auctionHouse = new AuctionHouse();
                 auctionHouse.name = name;
                 auctionHouseRepository.persist(auctionHouse);
-                // No need to return the entity body, just the status code
+                // No need to return the entity body (AuctionHouse), just the status code
                 return Response.status(204).build();
             });
     }

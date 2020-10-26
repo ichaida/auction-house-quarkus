@@ -14,6 +14,8 @@ public class AuctionHouseRepository implements PanacheRepository<AuctionHouse> {
 
     /**
      * Retrieves the AuctionHouse by name
+     * @param name The Auction House name
+     * @return Optional Auction House
      */
     public Optional<AuctionHouse> findByName(String name) {
         return find("name", name).firstResultOptional();

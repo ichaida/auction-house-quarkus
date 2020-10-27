@@ -21,12 +21,12 @@ public class Auction extends PanacheEntity {
 
     @NotNull
     @Column(name = "start_time", nullable = false)
-    @JsonbDateFormat("dd/MM/yyyy HH:mm:ss Z")
+    @JsonbDateFormat("dd/MM/yyyy HH:mm:ss")
     public LocalDateTime startTime;
 
     @NotNull
     @Column(name = "end_time", nullable = false)
-    @JsonbDateFormat("dd/MM/yyyy HH:mm:ss Z")
+    @JsonbDateFormat("dd/MM/yyyy HH:mm:ss")
     public LocalDateTime endTime;
 
     @NotNull
@@ -37,6 +37,7 @@ public class Auction extends PanacheEntity {
     @Column(name = "current_price", nullable = false)
     public Double currentPrice;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     public AuctionStatus status;
 

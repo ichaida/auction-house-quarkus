@@ -16,20 +16,23 @@ import java.util.List;
 @Table(name = "users")
 public class User extends PanacheEntity {
     @Column(name = "username", nullable = false)
+    @NotBlank
+    @Size(max = 50)
     public String username;
 
     @Column(name = "first_name", nullable = false)
     @NotBlank
-    @Size(max = 256)
+    @Size(max = 50)
     public String firstName;
 
     @Column(name = "last_name", nullable = false)
     @NotBlank
-    @Size(max = 256)
+    @Size(max = 50)
     public String lastName;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "user")
-    public List<Bid> bids = new ArrayList<>();
+    @JsonbTransient
+    public List<Bid> bids;
 
 
 }

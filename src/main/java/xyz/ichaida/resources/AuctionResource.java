@@ -1,5 +1,11 @@
 package xyz.ichaida.resources;
 
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import xyz.ichaida.entities.Auction;
 import xyz.ichaida.services.AuctionService;
@@ -83,8 +89,11 @@ public class AuctionResource {
      * @return 200
      */
     @POST
-    @Path("/add")
-    public Response addAuction(Auction auction) {
-        return this.auctionService.create(auction);
+    @Operation(summary = "Add an auction to a specific house", description = "Creates an Auction in a given auction house")
+    @APIResponses(value = @APIResponse(responseCode = "200", description = "Success",
+        content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = Auction.class))))
+    @Path("/add/house/id/{auctionHouseId}")
+    public Response addAuction(@Parameter(description = "The auction house id", required = true) @PathParam("auctionHouseId") Long auctionHouseId, Auction auction) {
+        return this.auctionService.create(auctionHouseId, auction);
     }
 }

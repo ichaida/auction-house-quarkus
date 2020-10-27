@@ -14,11 +14,13 @@ public class AuctionHouseRepository implements PanacheRepository<AuctionHouse> {
 
     /**
      * Retrieves the AuctionHouse by name
+     *  (lower fn in the find JPL Query to take into account the case sensitivity)
+     *
      * @param name The Auction House name
      * @return Optional Auction House
      */
     public Optional<AuctionHouse> findByName(String name) {
-        return find("name", name).firstResultOptional();
+        return find("lower(name)", name.toLowerCase()).firstResultOptional();
     }
 
 

@@ -5,7 +5,9 @@ import xyz.ichaida.entities.Auction;
 import xyz.ichaida.entities.AuctionStatus;
 import xyz.ichaida.entities.Bid;
 import xyz.ichaida.entities.User;
+import xyz.ichaida.exceptions.AuctionNotFoundException;
 import xyz.ichaida.exceptions.BidCreationException;
+import xyz.ichaida.exceptions.BidException;
 import xyz.ichaida.exceptions.UserNotFoundException;
 import xyz.ichaida.repositories.AuctionRepository;
 import xyz.ichaida.repositories.BidRepository;
@@ -14,8 +16,12 @@ import xyz.ichaida.repositories.UserRepository;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import javax.ws.rs.core.Response;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * This class implements all Bidding CRUD logic
@@ -27,37 +33,85 @@ import java.util.Objects;
 public class BidService {
 
     @Inject
-    private BidRepository bidRepository;
+    BidRepository bidRepository;
 
     @Inject
-    private AuctionRepository auctionRepository;
+    AuctionRepository auctionRepository;
 
     @Inject
-    private UserRepository userRepository;
+    UserRepository userRepository;
 
     @Transactional
-    public Bid placeBidOnAuction(Double bidAmount, Long userId, Long auctionId) throws Exception {
-        // Retrieve User
-        User user = getUser(userId);
+    public Response placeBidOnAuction(Double bidAmount, Long userId, Long auctionId) {
+        try {
+            // Retrieve User
+            User user = getUser(userId);
 
-        return auctionRepository
-            .findByIdOptional(auctionId)
-            .filter(existingAuction -> Objects.equals(existingAuction.id, auctionId))
-            .filter(existingAuction -> AuctionStatus.RUNNING.equals(existingAuction.status))
-            .filter(existingAuction -> bidAmount > existingAuction.startingPrice && bidAmount > existingAuction.currentPrice)
-            .map(existingAuction -> {
-                auctionRepository.updateAuctionCurrentPriceById(bidAmount, existingAuction.id);
-                // Place Bid
-                Bid bid = createBid(bidAmount, user, existingAuction);
-                bidRepository.persistAndFlush(bid);
-                return bid;
-            })
-            .orElseThrow(() -> new BidCreationException("Bid creation error"));
+            Bid bid = auctionRepository
+                .findByIdOptional(auctionId)
+                // Id null checks
+                .filter(existingAuction -> Objects.equals(existingAuction.id, auctionId))
+                .filter(existingAuction -> AuctionStatus.RUNNING.equals(existingAuction.status))
+                .filter(existingAuction -> bidAmount > existingAuction.startingPrice && bidAmount > existingAuction.currentPrice)
+                .map(existingAuction -> {
+                    existingAuction.currentPrice = bidAmount;
+                    auctionRepository.persistAndFlush(existingAuction);
+                    // Place Bid
+                    var bidPlaced = createBid(bidAmount, user, existingAuction);
+                    user.bids.add(bidPlaced);
+                    userRepository.persistAndFlush(user);
+
+
+                    return bidPlaced;
+                })
+                .orElseThrow(() -> new BidCreationException("Bid creation error"));
+
+            return Response.status(204).entity(bid).build();
+
+        } catch (UserNotFoundException | BidCreationException ex) {
+            log.error("Unable to place a bid, {}", ex.getMessage());
+            return Response.serverError().build();
+        }
     }
 
-    public List<Bid> getAllBiddingsByUser(Long userId) throws Exception {
-        return bidRepository.findBiddingsByUser(getUser(userId));
+    // All the bidding by a given username that happen thus far
+    public List<Bid> getAllBiddingsByUser(String userName) throws UserNotFoundException {
+        List<Bid> bidList = userRepository.findUserByName(userName)
+            .map(user -> bidRepository.findBiddingsByUser(user))
+            .orElseThrow(() -> new UserNotFoundException("Username not found"));
+
+        // Either test if the current time is less than the end time as an extra test
+        // Or only use the Auction Status, checking if it is in a RUNNING state
+        return bidList.stream()
+            .filter(bid -> LocalDateTime.now().isBefore(bid.auction.endTime))
+            .filter(bid -> AuctionStatus.RUNNING.equals(bid.auction.status))
+            .collect(Collectors.toList());
     }
+
+    public User getWinnerForTerminatedAuction(Long auctionId) {
+        try {
+            Auction auction = auctionRepository
+                .findByIdOptional(auctionId)
+                .orElseThrow(() -> new AuctionNotFoundException("Auction does not exists"));
+
+            if(!AuctionStatus.TERMINATED.equals(auction.status)){
+               throw new IllegalStateException("Auction Status Should be Terminated");
+            }
+
+            User user = this.bidRepository.findMaxBidAmount(auction)
+                .stream()
+                .max(Comparator.comparing(bid -> bid.bidAmount))
+                .map(bid -> bid.user)
+                .orElseThrow(() -> new BidException("Could not find the winning Bidder"));
+
+            return user;
+
+        } catch (Exception e) {
+            log.error("Unable to find a winner, {}", e.getMessage());
+            return null;
+        }
+    }
+
 
     private User getUser(Long userId) throws UserNotFoundException {
         // Retrieve User
@@ -67,7 +121,7 @@ public class BidService {
     }
 
     private Bid createBid(Double bidAmount, User user, Auction auction) {
-        Bid bid = new Bid();
+        var bid = new Bid();
         bid.auction = auction;
         bid.user = user;
         bid.bidAmount = bidAmount;

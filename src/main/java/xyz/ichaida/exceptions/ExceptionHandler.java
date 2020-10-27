@@ -29,8 +29,12 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
             return notFoundResponse(exception.getMessage());
         }
 
-        if (exception instanceof BidCreationException) {
+        if (exception instanceof BidException) {
             return notFoundResponse(exception.getMessage());
+        }
+
+        if (exception instanceof BidCreationException || exception instanceof AuctionCreationException) {
+            return creationErrorResponse(exception.getMessage());
         }
 
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -46,6 +50,18 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
      */
     private Response notFoundResponse(String message) {
         return Response.status(Response.Status.NOT_FOUND)
+            .entity(new ErrorResponseBody(message))
+            .build();
+    }
+
+    /**
+     * Creation Error
+     *
+     * @param message
+     * @return
+     */
+    private Response creationErrorResponse(String message) {
+        return Response.status(Response.Status.BAD_REQUEST)
             .entity(new ErrorResponseBody(message))
             .build();
     }

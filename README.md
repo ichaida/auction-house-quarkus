@@ -37,11 +37,104 @@ and Swagger UI
 http://0.0.0.0:8080/swagger-ui/
 ```
 
+> *PS:* If you're Swagger UI for feeding the data, please make sure to use the next format for the Dates `dd/MM/yyyy HH:mm:ss` (i.e '2/10/2020 10:10:00') 
+
+## Use cases 
+
+### Step 1 - Auction house
+
+Create an auction house with a given name. 
+
+```shell script
+curl -X POST "http://0.0.0.0:8080/api/houses/add/name/new%20Auction%20House" -H  "accept: */*" -d ""
+```
+
+List all auction houses created.
+
+```shell script
+curl -X GET "http://0.0.0.0:8080/api/houses/all" -H  "accept: application/json"
+
+# Output>
+[
+  {
+    "id": 1,
+    "name": "new Auction House"
+  }
+]
+```
+
+
+Delete a specific house.
+
+```shell script
+# Delete by Id
+curl -X DELETE "http://0.0.0.0:8080/api/houses/delete/id/10" -H  "accept: */*"
+
+# Or, delete by Name
+curl -X DELETE "http://0.0.0.0:8080/api/houses/delete/name/new%20Auction%20House" -H  "accept: */*"
+```
+
+### Step 2 - Auction
+
+Create an auction for a given auction house *(The Auction Body Id is not mandatory)*
+
+```shell script
+# Auction House Id = 2 
+curl -X POST "http://0.0.0.0:8080/api/auctions/add/house/id/2" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"id\":10,\"currentPrice\":200,\"endTime\":\"30/10/2020 08:15:00\",\"name\":\"iPad\",\"startTime\":\"25/10/2020 08:15:00\",\"startingPrice\":199,\"status\":\"NOT_STARTED\"}"
+``` 
+
+List all auctions
+
+```shell script
+curl -X GET "http://0.0.0.0:8080/api/auctions/all" -H  "accept: application/json"
+```
+
+List all auctions for a given auction house
+
+```shell script
+# Auctions of the House Id 1
+curl -X GET "http://0.0.0.0:8080/api/auctions/find/house/id/1" -H  "accept: application/json"
+```
+
+```shell script
+# Auctions of the House named UKAH
+curl -X GET "http://0.0.0.0:8080/api/auctions/find/house/name/UKAH" -H  "accept: application/json"
+```
+
+List all Auctions by Status
+
+```shell script
+curl -X GET "http://0.0.0.0:8080/api/auctions/find/status/RUNNING" -H  "accept: application/json"
+```
+
+### Step 3 - Bidders
+
+Create a new user
+
+```shell script
+curl -X POST "http://0.0.0.0:8080/api/users/add/user" -H  "accept: */*" -H  "Content-Type: application/json" -d "{\"id\":0,\"firstName\":\"john\",\"lastName\":\"doe\",\"username\":\"jdoe\"}"
+```
+
+List all bidders
+
+```shell script
+curl -X GET "http://0.0.0.0:8080/api/users/all" -H  "accept: application/json"
+```
+
+List all bidding (with the username) happening thus far
+
+```shell script
+# Username 'ichaida'
+curl -X GET "http://0.0.0.0:8080/api/users/all/bids/ichaida" -H  "accept: application/json"
+```
+
+
+
 ## Database 
 
 ### PostgreSQL (Local)
 
-Login as a Postgres user:
+Login as a Postgres user, then:
 
 ```postgresql
 CREATE DATABASE auction;
@@ -52,7 +145,7 @@ GRANT ALL PRIVILEGES ON DATABASE "auction" to auction;
 ### PostgreSQL (Docker)
 
 Use the shell script under `postgres-10.sh` the `src/main/docker` to spin up your PostgreSQL instance ready for use.
- 
+
 
 ## Packaging and running the application
 
@@ -91,6 +184,8 @@ You can then execute your native executable with: `./build/auction-house-1.0-SNA
 
 If you want to learn more about building native executables, please consult https://quarkus.io/guides/gradle-tooling.
 
-# RESTEasy JAX-RS
+## TODO
 
-Guide: https://quarkus.io/guides/rest-json
+- Replace `input.sql` with Flyway migration
+- PanacheRepository Mocks
+- Add testing outside `RestAssured`
